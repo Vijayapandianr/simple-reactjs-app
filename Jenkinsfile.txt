@@ -7,7 +7,7 @@ pipeline {
     stage('Build'){
 		steps{
 		echo "Current workspace is ${env.WORKSPACE}"
-		sh '/usr/bin/zip lambda_function.zip lambda_function.py'
+		//sh '/usr/bin/zip lambda_function.zip lambda_function.py'
 		}
     }
 
