@@ -1,27 +1,43 @@
 pipeline {
-   agent any
+    agent any /* {
+         label 'sam_node'
+    }*/
 
-   stages {
-	   
-    stage('Build'){
-		steps{
-		echo "Current workspace is ${env.WORKSPACE}"
-		//sh '/usr/bin/zip lambda_function.zip lambda_function.py'
-		}
+    stages {
+        
+        stage ('Checkout') {
+            steps {
+                checkout scm
+                }
+            }
+        stage('Build') { 
+            steps {
+                sh 'npm install' 
+            }
+        }   
+        
+        stage('Start the App') { 
+            steps {
+                sh 'npm start' 
+            }
+        }   
+        stage ('Deployment Build'){
+            steps {
+               sh 'npm run build'
+            }
+        }
+        
     }
-
-    stage('Push'){
-		steps{
-echo 'Push to S3 stage'
-        //sh 'aws s3 cp lambda_function.zip s3://g10x-scango-s3-kaliraj-devops'
-		}
+    
+    post {
+        always {
+            emailext attachLog: true, 
+	                                  
+	                                  body: """Build ${currentBuild.currentResult}: Job ${env.JOB_NAME} (Build Number# [${env.BUILD_NUMBER}])</br>
+                                     Check console output at :${env.BUILD_URL}  > ${env.JOB_NAME} [${env.BUILD_NUMBER}]""",
+	                                  to: 'vijayganesh6@gmail.com',
+	                                  subject: "Build ${currentBuild.currentResult}: Job ${env.JOB_NAME} (Build Number# [${env.BUILD_NUMBER}])"
+        }
+        
     }
-
-    stage('Deploy'){
-		steps{
-echo 'Deploy to Lamda stage'
- //       sh 'aws lambda create-function --function-name g10x-lambda-kaliraj2 --runtime python3.8 --code S3Bucket=g10x-scango-s3-kaliraj-devops,S3Key=lambda_function.zip --handler lambda_function.lambda_handler --region eu-west-1 --role arn:aws:iam::230315051295:role/service-role/g10x-lambda-kaliraj1-role-97cvwvru'
-				}
-    }
- }
 }
