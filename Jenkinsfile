@@ -12,18 +12,18 @@ pipeline {
             }
         stage('Build') { 
             steps {
-                sh 'npm install' 
+                bat 'npm install' 
             }
         }   
         
         stage('Start the App') { 
             steps {
-                sh 'npm start' 
+                bat 'npm start' 
             }
         }   
         stage ('Deployment Build'){
             steps {
-               sh 'npm run build'
+               bat 'npm run build'
             }
         }
         
