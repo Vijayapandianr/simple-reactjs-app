@@ -1,7 +1,9 @@
-pipeline {
+ pipeline {
     agent any /* {
          label 'sam_node'
     }*/
+    
+     tools { nodejs "nodejs" }
 
     stages {
         
@@ -10,22 +12,34 @@ pipeline {
                 checkout scm
                 }
             }
-        stage('Build') { 
+	
+        stage('Install') { 
             steps {
                 sh 'npm install' 
             }
-        }   
+        }
         
-        stage('Start the App') { 
+        stage('Build') { 
             steps {
                 sh 'npm run build' 
             }
         }   
-        stage ('Deployment Build'){
+        stage ('Zipping'){
             steps {
-               sh 'npm start'
+               sh '/usr/bin/zip -r build-$BUILD_NUMBER.zip . -i build/*'
             }
         }
+        stage ('Copy to S3'){
+            steps {
+               sh 'aws s3 cp build-$BUILD_NUMBER.zip s3://mystorage-s3/react/'
+            }
+        }
+        stage ('Deploy to Lambda'){
+            steps {
+               sh 'aws lambda update-function-code  --function-name react-app-function  --region ap-south-1  --s3-bucket mystorage-s3 --s3-key react/build-$BUILD_NUMBER.zip'
+            }
+        }
+        
         
     }
     
